@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/carbon")
@@ -16,16 +18,32 @@ public class CarbonController {
     @Autowired
     private CarbonService carbonService;
 
-    // Veriyi kaydeden ve hesaplamayı başlatan uç nokta (POST)
     @PostMapping("/save")
     public ResponseEntity<CarbonRecord> createRecord(@RequestBody CarbonRecord record) {
         CarbonRecord savedRecord = carbonService.saveCalculation(record);
         return ResponseEntity.ok(savedRecord);
     }
 
-    // Tüm kayıtları listeleyen uç nokta (GET)
-    @GetMapping("/all")
-    public ResponseEntity<List<CarbonRecord>> getAllRecords() {
-        return ResponseEntity.ok(carbonService.getAllRecords());
+    @GetMapping("/summary")
+    public ResponseEntity<Map<String, Double>> getSummary() {
+
+        List<CarbonRecord> records = carbonService.getAllRecords();
+
+        Map<String, Double> summary = new HashMap<>();
+        double total = 0.0;
+
+        for (CarbonRecord record : records) {
+            summary.merge(
+                    record.getActivityName(),
+                    record.getCarbonAmount(),
+                    Double::sum
+            );
+            total += record.getCarbonAmount();
+        }
+
+        summary.put("TOTAL", total);
+
+        return ResponseEntity.ok(summary);
     }
+
 }

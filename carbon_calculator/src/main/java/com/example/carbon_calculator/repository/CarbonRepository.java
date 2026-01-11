@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CarbonRepository extends JpaRepository<CarbonRecord, Long> {
-    // Spring Data JPA bu interface'i otomatik olarak implement eder.
 }

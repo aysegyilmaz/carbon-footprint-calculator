@@ -14,14 +14,14 @@ public class CarbonRecord {
     private Long id;
 
     @Column(name = "activity_name", nullable = false)
-    private String activityName; // Örn: Video İzleme, E-posta
+    private String activityName;
 
     @Column(name = "duration_minutes", nullable = false)
-    private Integer durationMinutes; // Kaç dakika sürdü?
+    private Integer durationMinutes;
 
     @Column(name = "carbon_amount")
-    private Double carbonAmount; // Hesaplanan CO2 miktarı
+    private Double carbonAmount;
 
     @Column(name = "record_date")
-    private LocalDateTime recordDate = LocalDateTime.now(); // Kayıt tarihi
+    private LocalDateTime recordDate = LocalDateTime.now();
 }

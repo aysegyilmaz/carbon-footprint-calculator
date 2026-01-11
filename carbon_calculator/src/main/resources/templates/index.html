@@ -2,65 +2,79 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Karbon Ayak İzi Hesaplayıcı</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>QuickCarbon | Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+<div class="dashboard">
+    <aside class="sidebar">
+        <div class="logo"><span class="q">Personal</span><span class="c">CARBON</span></div>
+        <nav>
+            <ul>
+                <li class="active" onclick="showDashboard()"><i class="fas fa-home"></i> Anasayfa</li>
+                <li onclick="showStats()"><i class="fas fa-chart-bar"></i> İstatistikler</li>
+            </ul>
+        </nav>
+    </aside>
 
-<h1>Karbon Kaydı Ekle</h1>
 
-<form id="carbonForm">
-    <label>Aktivite Adı</label>
-    <input type="text" id="activityName" required>
+    <main class="main-content">
+        <header class="top-bar">
+            <h2>Anasayfa</h2>
+        </header>
 
-    <label>Süre (dakika)</label>
-    <input type="number" id="durationMinutes" required>
+        <section class="stats-grid">
+            <div class="card blue">
+                <span class="label">Video İzleme</span>
+                <div class="value" id="videoStat">0,00 <small>kg</small></div>
+            </div>
+            <div class="card cyan">
+                <span class="label">E-Posta</span>
+                <div class="value" id="emailStat">0,00 <small>kg</small></div>
+            </div>
+            <div class="card purple">
+                <span class="label">Online Toplantı</span>
+                <div class="value" id="meetingStat">0,00 <small>kg</small></div>
+            </div>
+            <div class="card green">
+                <span class="label">Sosyal Medya</span>
+                <div class="value" id="socialStat">0,00 <small>kg</small></div>
+            </div>
+            <div class="card total">
+                <span class="label">Σ Toplam</span>
+                <div class="value" id="totalStat">0,00 <small>kg</small></div>
+            </div>
+        </section>
 
-    <button type="submit">Kaydet</button>
-</form>
+        <section id="chartSection" style="display:none;">
+            <div class="chart-container">
+                <h3 style="color: #333; margin-bottom: 20px;">Aktivite Bazlı Karbon Salınım Analizi</h3>
+                <canvas id="carbonChart"></canvas>
+            </div>
+        </section>
 
-<h2>Kayıtlar</h2>
-<ul id="recordList"></ul>
+        <section class="form-container">
+            <div class="data-entry-card">
+                <h3>Yeni Aktivite Ekle</h3>
+                <div class="form-row">
+                    <select id="activityName">
+                        <option value="Video İzleme">Video İzleme</option>
+                        <option value="E-posta">E-posta</option>
+                        <option value="Online Toplantı">Online Toplantı</option>
+                        <option value="Sosyal Medya">Sosyal Medya</option>
+                    </select>
+                    <input type="number" id="durationMinutes" placeholder="Süre (dk)">
+                    <button onclick="calculate()">Kaydet</button>
+                </div>
+            </div>
+        </section>
+    </main>
 
-<script>
-    document.getElementById("carbonForm").addEventListener("submit", function (e) {
-        e.preventDefault();
+</div>
 
-        const data = {
-            activityName: document.getElementById("activityName").value,
-            durationMinutes: document.getElementById("durationMinutes").value
-        };
 
-        fetch("http://localhost:8080/api/carbon/save", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        })
-            .then(res => res.json())
-            .then(() => {
-                loadRecords();
-                document.getElementById("carbonForm").reset();
-            });
-    });
-
-    function loadRecords() {
-        fetch("http://localhost:8080/api/carbon/all")
-            .then(res => res.json())
-            .then(data => {
-                const list = document.getElementById("recordList");
-                list.innerHTML = "";
-                data.forEach(r => {
-                    const li = document.createElement("li");
-                    li.textContent = `${r.activityName} - ${r.durationMinutes} dk`;
-                    list.appendChild(li);
-                });
-            });
-    }
-
-    loadRecords();
-</script>
-
+<script src="/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
