@@ -26,24 +26,7 @@ public class CarbonController {
 
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Double>> getSummary() {
-
-        List<CarbonRecord> records = carbonService.getAllRecords();
-
-        Map<String, Double> summary = new HashMap<>();
-        double total = 0.0;
-
-        for (CarbonRecord record : records) {
-            summary.merge(
-                    record.getActivityName(),
-                    record.getCarbonAmount(),
-                    Double::sum
-            );
-            total += record.getCarbonAmount();
-        }
-
-        summary.put("TOTAL", total);
-
-        return ResponseEntity.ok(summary);
+        return ResponseEntity.ok(carbonService.getCarbonSummary());
     }
 
 }

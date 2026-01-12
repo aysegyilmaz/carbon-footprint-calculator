@@ -1,6 +1,6 @@
 let myChart = null; // Grafiği her seferinde yeniden yaratmamak için
 
-const statsMap = {
+const statsMap = { // Aktivite isimlerini HTML element ID'lerine eştirdim
     "Video İzleme": "videoStat",
     "E-posta": "emailStat",
     "Online Toplantı": "meetingStat",
@@ -21,7 +21,7 @@ function calculate() {
     }
 
 -
-    fetch("/api/carbon/save", {
+    fetch("/api/carbon/save", {     // Veriyi backend'e gönder
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -29,9 +29,9 @@ function calculate() {
             durationMinutes: parseInt(duration)
         })
     })
-        .then(res => res.json())
+        .then(res => res.json())     // JSON yanıtını al
         .then(() => {
-            loadStats(); // Kayıttan sonra sayıları tazele
+            loadStats();                //Yeni veri eklendi,Dashboard tekrar yüklendi, Input temizlendi.
             document.getElementById("durationMinutes").value = "";
         })
         .catch(err => console.error("Hata:", err));
@@ -39,7 +39,7 @@ function calculate() {
 
 function loadStats() {
 
-    fetch("/api/carbon/summary")
+    fetch("/api/carbon/summary")  // Backend'den özet veriyi al
         .then(res => res.json())
         .then(summaryData => {
             console.log("Backendden Gelen Özet:", summaryData);
@@ -51,11 +51,11 @@ function loadStats() {
             }
 
        -
-            Object.keys(statsMap).forEach(activity => {
+            Object.keys(statsMap).forEach(activity => {  // Her aktivite için ilgili HTML elementini güncelle
                 const id = statsMap[activity];
-                const value = summaryData[activity] || 0;
+                const value = summaryData[activity] || 0;      // Eğer veri yoksa 0 kullan
                 document.getElementById(id).innerHTML =
-                    `${value.toFixed(2)} <small>kg</small>`;
+                    `${value.toFixed(2)} <small>kg</small>`;  //Kartları doldur 2 ondalık göster
             });
         })
         .catch(err => console.error("Yükleme Hatası:", err));
@@ -123,7 +123,7 @@ function showStats() {
         });
 }
 
-function showDashboard() {
+function showDashboard() {              // Formu tekrar göster, grafiği gizle
     document.querySelector(".form-container").style.display = "block";
     document.getElementById("chartSection").style.display = "none";
 }

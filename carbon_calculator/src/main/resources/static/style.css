@@ -47,7 +47,7 @@ nav ul li.active, nav ul li:hover { background: #e3f2fd; color: var(--q-blue); }
 .cyan { background: #46c1e1; }
 .purple { background: #7b68ee; }
 .green { background: #4ec48f; }
-.total { background: #1a1a1a; }
+.total { background: #3b3b3b; }
 
 .card .label { font-size: 13px; opacity: 0.9; }
 .card .value { font-size: 20px; font-weight: bold; margin-top: 10px; }

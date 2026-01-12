@@ -4,7 +4,10 @@ import com.example.carbon_calculator.model.CarbonRecord;
 import com.example.carbon_calculator.repository.CarbonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CarbonService {
@@ -32,5 +35,26 @@ public class CarbonService {
     public List<CarbonRecord> getAllRecords() {
         return repository.findAll();
     }
+
+    public Map<String, Double> getCarbonSummary() {
+
+        List<CarbonRecord> records = getAllRecords();
+
+        Map<String, Double> summary = new HashMap<>();
+        double total = 0.0;
+
+        for (CarbonRecord record : records) {
+            summary.merge(
+                    record.getActivityName(),
+                    record.getCarbonAmount(),
+                    Double::sum
+            );
+            total += record.getCarbonAmount();
+        }
+
+        summary.put("TOTAL", total);
+        return summary;
+    }
+
 
 }
