@@ -13,7 +13,13 @@
         <nav>
             <ul>
                 <li class="active" onclick="showDashboard()"><i class="fas fa-home"></i> Anasayfa</li>
+                <li onclick="showDaily()"><i class="fas fa-calendar-day"></i> Günlük Aktivite</li>
                 <li onclick="showStats()"><i class="fas fa-chart-bar"></i> İstatistikler</li>
+                <li class="pdf-menu-item">
+                    <button onclick="downloadPDF()" class="pdf-btn">
+                        <i class="fas fa-file-pdf"></i> Raporu İndir
+                    </button>
+                </li>
             </ul>
         </nav>
     </aside>
@@ -22,7 +28,14 @@
         <header class="top-bar">
             <h2>Anasayfa</h2>
         </header>
-
+        <div id="alertBox" class="alert-container" style="display: none;">
+            <div class="alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="alert-content">
+                <h4>Dikkat, Karbon Sınırı Aşılıyor!</h4>
+                <p id="alertMessage">Bugünkü salınımınız kritik seviyeye ulaştı.</p>
+            </div>
+            <button class="close-alert" onclick="closeAlert()">×</button>
+        </div>
         <section class="stats-grid">
             <div class="card blue">
                 <span class="label">Video İzleme</span>
@@ -46,27 +59,95 @@
             </div>
         </section>
 
+        <!-- Günlük Aktivite Bölümü -->
+        <section id="dailySection" style="display:none;">
+            <header class="top-bar">
+            </header>
+            
+            <!-- Günlük Veri Girişi Formu -->
+            <section class="daily-entry-section">
+                <div class="data-entry-card">
+                    <h3><i class="fas fa-calendar-day"></i> Günlük Veri Girişi</h3>
+                    <p class="form-description">Bugün yaptığınız dijital aktiviteleri kaydederek günlük karbon ayak izinizi takip edin.</p>
+                    <div class="form-row">
+                        <select id="activityNameDaily">
+                            <option value="Seçiniz" disabled selected>Aktivite Seçiniz</option>
+                            <option value="Video İzleme">Video İzleme</option>
+                            <option value="E-posta">E-posta</option>
+                            <option value="Online Toplantı">Online Toplantı</option>
+                            <option value="Sosyal Medya">Sosyal Medya</option>
+                        </select>
+                        <input type="number" id="durationMinutesDaily" placeholder="Süre (dakika)">
+                        <button onclick="calculateDaily()">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Günlük Aktivite Kartları -->
+            <section class="daily-stats-grid">
+                <div class="card blue daily-card" id="dailyVideoStat">
+                    <span class="label">Video İzleme</span>
+                    <div class="value">0,00 <small>kg</small></div>
+                </div>
+                <div class="card cyan daily-card" id="dailyEmailStat">
+                    <span class="label">E-Posta</span>
+                    <div class="value">0,00 <small>kg</small></div>
+                </div>
+                <div class="card purple daily-card" id="dailyMeetingStat">
+                    <span class="label">Online Toplantı</span>
+                    <div class="value">0,00 <small>kg</small></div>
+                </div>
+                <div class="card green daily-card" id="dailySocialStat">
+                    <span class="label">Sosyal Medya</span>
+                    <div class="value">0,00 <small>kg</small></div>
+                </div>
+                <div class="card total daily-card" id="dailyTotalStat">
+                    <span class="label">Σ Günlük Toplam</span>
+                    <div class="value">0,00 <small>kg</small></div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Bilgilendirme Kartları (Ana Sayfa) -->
+        <section id="infoCards" class="info-cards-section">
+            <div class="info-cards-grid">
+                <div class="info-card">
+                    <div class="info-icon blue-bg">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h4>Karbon Ayak İzi Nedir?</h4>
+                    <p>Karbon ayak izi, bir bireyin veya organizasyonun faaliyetleri sonucunda atmosfere saldığı toplam karbondioksit miktarıdır. Dijital aktiviteleriniz de karbon salınımına neden olur.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon green-bg">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h4>Dijital Karbon Salınımı</h4>
+                    <p>Video izleme, e-posta gönderme, online toplantılar ve sosyal medya kullanımı gibi dijital aktiviteler enerji tüketir ve karbon salınımına katkıda bulunur.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon cyan-bg">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Nasıl Azaltabilirsiniz?</h4>
+                    <p>Video kalitesini düşürün, gereksiz e-postaları azaltın, toplantı sürelerini optimize edin ve sosyal medya kullanımınızı bilinçli yapın.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon purple-bg">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4>Sürdürülebilir Dijital Yaşam</h4>
+                    <p>Dijital aktivitelerinizi takip ederek karbon ayak izinizi azaltabilir ve daha sürdürülebilir bir dijital yaşam sürdürebilirsiniz.</p>
+                </div>
+            </div>
+        </section>
+
         <section id="chartSection" style="display:none;">
             <div class="chart-container">
                 <h3 style="color: #333; margin-bottom: 20px;">Aktivite Bazlı Karbon Salınım Analizi</h3>
                 <canvas id="carbonChart"></canvas>
-            </div>
-        </section>
-
-        <section class="form-container">
-            <div class="data-entry-card">
-                <h3>Yeni Aktivite Ekle</h3>
-                <div class="form-row">
-                    <select id="activityName">
-                        <option value="Seçiniz" disabled selected>Aktivite Seçiniz</option>
-                        <option value="Video İzleme">Video İzleme</option>
-                        <option value="E-posta">E-posta</option>
-                        <option value="Online Toplantı">Online Toplantı</option>
-                        <option value="Sosyal Medya">Sosyal Medya</option>
-                    </select>
-                    <input type="number" id="durationMinutes" placeholder="Süre (dk)">
-                    <button onclick="calculate()">Kaydet</button>
-                </div>
             </div>
         </section>
     </main>
@@ -74,7 +155,7 @@
 </div>
 
 
-<script src="/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/script.js"></script>
 </body>
 </html>

@@ -1,5 +1,9 @@
 let myChart = null; // Grafiği her seferinde yeniden yaratmamak için
 
+function downloadPDF() {
+    console.log("PDF İndirme isteği gönderildi...");
+    window.location.href = "/api/carbon/report/download";
+}
 const statsMap = { // Aktivite isimlerini HTML element ID'lerine eştirdim
     "Video İzleme": "videoStat",
     "E-posta": "emailStat",
@@ -46,8 +50,12 @@ function loadStats() {
 
             // Backend'den gelen Map içindeki TOTAL anahtarını alıyoruz
             if (summaryData["TOTAL"] !== undefined) {
+                const totalAmount = summaryData["TOTAL"];
                 document.getElementById("totalStat").innerHTML =
-                    `${summaryData["TOTAL"].toFixed(2)} <small>kg</small>`;
+                    `${totalAmount.toFixed(2)} <small>kg</small>`;
+
+                // Karbon limitini kontrol et (Limit: 10 kg)
+                checkCarbonLimit(totalAmount);
             }
 
        -
@@ -60,12 +68,40 @@ function loadStats() {
         })
         .catch(err => console.error("Yükleme Hatası:", err));
 
-
-
 }
-function showStats() {
 
-    document.querySelector(".form-container").style.display = "none";
+
+function showDaily() {
+    // Menü aktif durumunu güncelle
+    document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
+    if (event && event.target) {
+        event.target.closest('li').classList.add('active');
+    }
+    
+    // Tüm bölümleri gizle
+    document.getElementById("infoCards").style.display = "none";
+    document.getElementById("chartSection").style.display = "none";
+    document.querySelector(".stats-grid").style.display = "none";
+    document.querySelector(".top-bar h2").textContent = "Günlük Aktivite";
+    
+    // Günlük bölümü göster
+    document.getElementById("dailySection").style.display = "block";
+    
+    // Günlük verileri yükle
+    loadDailyStats();
+}
+
+function showStats() {
+    // Menü aktif durumunu güncelle
+    document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
+    if (event && event.target) {
+        event.target.closest('li').classList.add('active');
+    }
+    
+    document.getElementById("infoCards").style.display = "none";
+    document.getElementById("dailySection").style.display = "none";
+    document.querySelector(".stats-grid").style.display = "none";
+    document.querySelector(".top-bar h2").textContent = "İstatistikler";
     document.getElementById("chartSection").style.display = "block";
 
 
@@ -123,7 +159,124 @@ function showStats() {
         });
 }
 
-function showDashboard() {              // Formu tekrar göster, grafiği gizle
-    document.querySelector(".form-container").style.display = "block";
+function showDashboard() {
+    // Menü aktif durumunu güncelle
+    document.querySelectorAll('nav ul li').forEach(li => li.classList.remove('active'));
+    if (event && event.target) {
+        event.target.closest('li').classList.add('active');
+    }
+    
+    // Tüm bölümleri gizle
     document.getElementById("chartSection").style.display = "none";
+    document.getElementById("dailySection").style.display = "none";
+    
+    // Ana sayfa bölümlerini göster
+    document.getElementById("infoCards").style.display = "block";
+    document.querySelector(".stats-grid").style.display = "grid";
+    document.querySelector(".top-bar h2").textContent = "Anasayfa";
+}
+
+function loadDailyStats() {
+    fetch("/api/carbon/daily")
+        .then(res => res.json())
+        .then(dailyData => {
+            console.log("Günlük Veriler:", dailyData);
+            updateDailyCards(dailyData);
+        })
+        .catch(err => console.error("Günlük Veri Yükleme Hatası:", err));
+}
+
+function updateDailyCards(dailyData) {
+    console.log("Günlük Veri:", dailyData);
+    
+    const dailyStatsMap = {
+        "Video İzleme": "dailyVideoStat",
+        "E-posta": "dailyEmailStat",
+        "Online Toplantı": "dailyMeetingStat",
+        "Sosyal Medya": "dailySocialStat"
+    };
+    
+    // Tüm günlük kartları göster ve değerleri güncelle
+    Object.keys(dailyStatsMap).forEach(activity => {
+        const id = dailyStatsMap[activity];
+        const value = dailyData[activity] || 0;
+        const card = document.getElementById(id);
+        
+        if (card) {
+            // Kartı her zaman göster
+            card.style.display = 'block';
+            const valueElement = card.querySelector('.value');
+            if (valueElement) {
+                valueElement.innerHTML = `${value.toFixed(2)} <small>kg</small>`;
+            }
+        } else {
+            console.error("Kart bulunamadı:", id, "aktivite:", activity);
+        }
+    });
+    
+    // Toplam kartı
+    const total = dailyData["TOTAL"] || 0;
+    const totalCard = document.getElementById("dailyTotalStat");
+    if (totalCard) {
+        totalCard.style.display = 'block';
+        const valueElement = totalCard.querySelector('.value');
+        if (valueElement) {
+            valueElement.innerHTML = `${total.toFixed(2)} <small>kg</small>`;
+        }
+    } else {
+        console.error("Toplam kartı bulunamadı: dailyTotalStat");
+    }
+}
+
+function calculateDaily() {
+    const activity = document.getElementById("activityNameDaily").value;
+    const duration = document.getElementById("durationMinutesDaily").value;
+
+    if (!activity || activity === "Seçiniz") {
+        alert("Lütfen bir aktivite seçiniz");
+        return;
+    }
+
+    if (!duration || duration <= 0) {
+        alert("Lütfen geçerli bir süre giriniz");
+        return;
+    }
+
+    fetch("/api/carbon/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            activityName: activity,
+            durationMinutes: parseInt(duration)
+        })
+    })
+        .then(res => res.json())
+        .then(() => {
+            // Günlük verileri yeniden yükle
+            loadDailyStats();
+            // Ana sayfa istatistiklerini de güncelle
+            loadStats();
+            // Formu temizle
+            document.getElementById("durationMinutesDaily").value = "";
+            document.getElementById("activityNameDaily").value = "Seçiniz";
+        })
+        .catch(err => console.error("Hata:", err));
+}
+
+function checkCarbonLimit(total) {
+    const alertBox = document.getElementById("alertBox");
+    const alertMessage = document.getElementById("alertMessage");
+    const limit = 10.0; // Test etmek istersen burayı 0.5 gibi küçük bir sayı yapabilirsin
+
+    if (total > limit) {
+        alertBox.style.display = "flex";
+        alertMessage.innerHTML = `Bugünkü toplam salınımınız <b>${total.toFixed(2)} kg</b> oldu. 
+                                  Biraz fazla karbon ürettik, bugünlük bu kadar teknoloji yeter mi Ayşegül? 🌱`;
+    } else {
+        alertBox.style.display = "none";
+    }
+}
+
+function closeAlert() {
+    document.getElementById("alertBox").style.display = "none";
 }
